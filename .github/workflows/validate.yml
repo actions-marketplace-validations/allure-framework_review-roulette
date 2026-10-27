@@ -12,22 +12,16 @@ jobs:
       - &checkout
         name: Checkout
         uses: actions/checkout@v7
-      - &setup-node
-        name: Setup node
-        uses: actions/setup-node@v7
-        with:
-          node-version: 24.x
-          cache: yarn
-      - &install-deps
-        run: yarn install --immutable
+      - &install
+        name: Install dependencies
+        uses: ./.github/actions/install
       - name: Run check
         run: yarn check
   build:
     runs-on: ubuntu-latest
     steps:
       - *checkout
-      - *setup-node
-      - *install-deps
+      - *install
       - name: Build
         run: yarn build
       - name: Verify build
@@ -51,7 +45,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - *checkout
-      - *setup-node
-      - *install-deps
+      - *install
       - name: Test
         run: yarn coverage
