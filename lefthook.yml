@@ -1,0 +1,17 @@
+pre-commit:
+  piped: true
+  jobs:
+    - name: lint
+      glob: "*.{ts,js,json,yml,yaml,md}"
+      exclude: "dist/**"
+      run: yarn check --fix {staged_files}
+      stage_fixed: true
+    - name: build
+      run: |
+        yarn build || exit $?
+        if git diff --quiet -- dist && test -z "$(git ls-files --others --exclude-standard -- dist)"; then
+          exit 0
+        fi
+        git add -- dist || exit $?
+        echo "Build output changed and has been staged. Review it and retry the commit." >&2
+        exit 1
