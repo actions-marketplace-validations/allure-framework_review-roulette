@@ -9,9 +9,10 @@ export async function run(
 ): Promise<RunResult> {
   const identity = await api.checkAccess(target, options.organizations);
   const pull = await api.getPull(target);
-  const eligible = options.reviewers.filter(
-    (login) => login.toLowerCase() !== pull.author.toLowerCase(),
-  );
+  const reviewers = options.reviewers.length
+    ? options.reviewers
+    : await api.getSuggestedReviewers(target);
+  const eligible = reviewers.filter((login) => login.toLowerCase() !== pull.author.toLowerCase());
   if (!eligible.length)
     throw new Error("No eligible reviewers remain after excluding the PR author");
   const counts = await api.getCounts(target, options.organizations, eligible);

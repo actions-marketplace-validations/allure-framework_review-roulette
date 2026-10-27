@@ -14,7 +14,6 @@ export function parseOptions(raw: Record<string, string>): Options {
   const token = (raw.token ?? "").trim();
   if (!token) throw new Error("token is required");
   const reviewers = parseList(raw.reviewers ?? "", true);
-  if (!reviewers.length) throw new Error("reviewers must contain at least one login");
   const assignment = raw["assign-reviewer"]?.trim() || "false";
   if (assignment !== "true" && assignment !== "false")
     throw new Error("assign-reviewer must be true or false");

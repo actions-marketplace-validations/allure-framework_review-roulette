@@ -102,6 +102,21 @@ export function createGitHubApi(token: string, runtime: Runtime = {}): GitHubApi
       }
       return { author: pull.data.user.login, requestedReviewers };
     },
+    async getSuggestedReviewers(target) {
+      const data = await retry(() =>
+        octokit.graphql<{
+          repository: {
+            pullRequest: { suggestedReviewers: { reviewer: { login: string } }[] } | null;
+          } | null;
+        }>(
+          "query($owner: String!, $repo: String!, $number: Int!) { repository(owner: $owner, name: $repo) { pullRequest(number: $number) { suggestedReviewers { reviewer { login } } } } }",
+          { ...params(target), number: target.pullNumber },
+        ),
+      );
+      const suggestions = data.repository?.pullRequest?.suggestedReviewers;
+      if (!suggestions) throw new Error("Cannot resolve suggested reviewers for the target PR");
+      return unique(suggestions.map((suggestion) => suggestion.reviewer.login));
+    },
     async getCounts(target, organizations, reviewers) {
       const scopes = organizations.length
         ? unique(organizations).map((org) => `org:${org}`)

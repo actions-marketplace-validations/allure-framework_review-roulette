@@ -16,6 +16,7 @@ function fixture(
     fail?: string;
     author?: string;
     counts?: Map<string, number>;
+    suggested?: string[];
   } = {},
 ) {
   const events: string[] = [];
@@ -33,6 +34,10 @@ function fixture(
     async getPull() {
       step("pull");
       return { author: settings.author ?? "author", requestedReviewers: settings.requested ?? [] };
+    },
+    async getSuggestedReviewers() {
+      step("suggestions");
+      return settings.suggested ?? ["Author", "Alice", "Bob"];
     },
     async getCounts(_target, _orgs, reviewers) {
       step("counts");
@@ -67,10 +72,29 @@ it("checks access first, excludes author before counting and creates suggestion 
   const f = fixture();
   const result = await run(options, target, f.api, () => 0);
   expect(result).toEqual({ reviewer: "Alice", reviewCount: 1, assigned: false });
-  expect(f.events[0]).toBe("access");
+  expect(f.events.slice(0, 3)).toEqual(["access", "pull", "counts"]);
   expect(f.counted).toEqual([["Alice", "Bob"]]);
   expect(f.events).not.toContain("request:Alice");
   expect(f.published[0]).toContain("Suggestion only");
+});
+it("balances native suggestions when no reviewer list is supplied", async () => {
+  const f = fixture();
+  const result = await run({ ...options, reviewers: [] }, target, f.api, () => 0);
+  expect(result).toEqual({ reviewer: "Alice", reviewCount: 1, assigned: false });
+  expect(f.counted).toEqual([["Alice", "Bob"]]);
+  expect(f.events.slice(0, 4)).toEqual(["access", "pull", "suggestions", "counts"]);
+});
+it("fails before counting when GitHub has no suggestions", async () => {
+  const f = fixture({ suggested: [] });
+  await expect(run({ ...options, reviewers: [] }, target, f.api)).rejects.toThrow(/eligible/);
+  expect(f.events).toEqual(["access", "pull", "suggestions"]);
+});
+it("propagates suggestion discovery failures without publishing", async () => {
+  const f = fixture({ fail: "suggestions" });
+  await expect(run({ ...options, reviewers: [] }, target, f.api)).rejects.toThrow(
+    "suggestions failed",
+  );
+  expect(f.published).toEqual([]);
 });
 it("requests before publishing success", async () => {
   const f = fixture();

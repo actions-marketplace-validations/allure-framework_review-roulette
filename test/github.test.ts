@@ -62,6 +62,41 @@ describe("access", () => {
     expect(await api.checkAccess(target, [])).toEqual({ login: "alice" });
   });
 });
+describe("suggested reviewers", () => {
+  it("fetches native PR suggestions and deduplicates logins", async () => {
+    const { api, calls } = harness([
+      {
+        body: {
+          data: {
+            repository: {
+              pullRequest: {
+                suggestedReviewers: [
+                  { reviewer: { login: "Alice" } },
+                  { reviewer: { login: "ALICE" } },
+                  { reviewer: { login: "Bob" } },
+                ],
+              },
+            },
+          },
+        },
+      },
+    ]);
+    const reviewers = await api.getSuggestedReviewers(target);
+    expect(reviewers).toEqual(["Alice", "Bob"]);
+    expect(calls[0].body.variables).toEqual({ owner: "acme", repo: "project", number: 7 });
+    expect(calls[0].body.query).toContain("suggestedReviewers { reviewer { login } }");
+  });
+  it("returns an empty pool when GitHub has no suggestions", async () => {
+    const { api } = harness([
+      { body: { data: { repository: { pullRequest: { suggestedReviewers: [] } } } } },
+    ]);
+    expect(await api.getSuggestedReviewers(target)).toEqual([]);
+  });
+  it.each([null, { pullRequest: null }])("rejects an inaccessible PR %j", async (repository) => {
+    const { api } = harness([{ body: { data: { repository } } }]);
+    await expect(api.getSuggestedReviewers(target)).rejects.toThrow(/suggested reviewers/i);
+  });
+});
 describe("workloads", () => {
   it("uses repo scope and outstanding open PR requests without subtracting target or excluding drafts", async () => {
     const { api, calls } = harness([{ body: { data: { q0: { issueCount: 3 } } } }]);

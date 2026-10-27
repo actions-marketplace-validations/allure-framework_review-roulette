@@ -24,11 +24,19 @@ describe("parseOptions", () => {
     expect(result.organizations).toEqual([]);
     expect(result.assignReviewer).toBe(true);
   });
+  it.each([undefined, "", " , \n"])(
+    "uses discovery for missing or empty reviewers %j",
+    (reviewers) => {
+      const result = parseOptions({
+        token: "secret",
+        ...(reviewers === undefined ? {} : { reviewers }),
+      });
+      expect(result.reviewers).toEqual([]);
+    },
+  );
   it.each<Record<string, string>>([
     {},
-    { token: "s" },
     { token: "", reviewers: "a" },
-    { token: "s", reviewers: " , " },
     { token: "s", reviewers: "a--b" },
     { token: "s", reviewers: "-alice" },
     { token: "s", reviewers: "a", organizations: "bad org" },

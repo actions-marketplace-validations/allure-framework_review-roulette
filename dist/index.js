@@ -20077,7 +20077,6 @@ function parseOptions(raw) {
 	const token = (raw.token ?? "").trim();
 	if (!token) throw new Error("token is required");
 	const reviewers = parseList(raw.reviewers ?? "", true);
-	if (!reviewers.length) throw new Error("reviewers must contain at least one login");
 	const assignment = raw["assign-reviewer"]?.trim() || "false";
 	if (assignment !== "true" && assignment !== "false") throw new Error("assign-reviewer must be true or false");
 	return {
@@ -20154,6 +20153,14 @@ function createGitHubApi(token, runtime = {}) {
 				author: pull.data.user.login,
 				requestedReviewers
 			};
+		},
+		async getSuggestedReviewers(target) {
+			const suggestions = (await retry(() => octokit.graphql("query($owner: String!, $repo: String!, $number: Int!) { repository(owner: $owner, name: $repo) { pullRequest(number: $number) { suggestedReviewers { reviewer { login } } } } }", {
+				...params(target),
+				number: target.pullNumber
+			}))).repository?.pullRequest?.suggestedReviewers;
+			if (!suggestions) throw new Error("Cannot resolve suggested reviewers for the target PR");
+			return unique(suggestions.map((suggestion) => suggestion.reviewer.login));
 		},
 		async getCounts(target, organizations, reviewers) {
 			const scopes = organizations.length ? unique(organizations).map((org) => `org:${org}`) : [`repo:${target.owner}/${target.repo}`];
@@ -20260,7 +20267,7 @@ function selectReviewer(reviewers, author, counts, requestedReviewers, previousR
 async function run(options, target, api, random = Math.random) {
 	const identity = await api.checkAccess(target, options.organizations);
 	const pull = await api.getPull(target);
-	const eligible = options.reviewers.filter((login) => login.toLowerCase() !== pull.author.toLowerCase());
+	const eligible = (options.reviewers.length ? options.reviewers : await api.getSuggestedReviewers(target)).filter((login) => login.toLowerCase() !== pull.author.toLowerCase());
 	if (!eligible.length) throw new Error("No eligible reviewers remain after excluding the PR author");
 	const counts = await api.getCounts(target, options.organizations, eligible);
 	const comment = findManagedComment(await api.listComments(target), identity);

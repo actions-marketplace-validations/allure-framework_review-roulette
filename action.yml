@@ -10,8 +10,8 @@ inputs:
     description: Token with target PR write access and visibility into workload scopes.
     default: ${{ github.token }}
   reviewers:
-    description: Comma- or newline-separated GitHub user logins.
-    required: true
+    description: Comma- or newline-separated GitHub user logins; empty uses GitHub's suggested reviewers for the PR.
+    default: ""
   organizations:
     description: Organizations whose visible workloads are combined; empty means current repository.
     default: ""

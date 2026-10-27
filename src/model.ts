@@ -33,6 +33,7 @@ export interface CommentIdentity {
 export interface GitHubApi {
   checkAccess(target: Target, organizations: string[]): Promise<CommentIdentity>;
   getPull(target: Target): Promise<PullSnapshot>;
+  getSuggestedReviewers(target: Target): Promise<string[]>;
   getCounts(
     target: Target,
     organizations: string[],

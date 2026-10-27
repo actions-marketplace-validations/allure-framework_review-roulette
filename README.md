@@ -1,6 +1,6 @@
 # Review roulette
 
-A GitHub Action that picks the least-loaded reviewer from a static list, posts one managed pull-request comment, and optionally requests review.
+A GitHub Action that picks the least-loaded reviewer from an explicit list or GitHub's native PR-specific suggestions, posts one managed pull-request comment, and optionally requests review.
 
 **Workload = outstanding personal review requests on open PRs**, not PR assignees or submitted reviews. The PR author is excluded. Minimum-count ties are random.
 
@@ -37,14 +37,20 @@ Both modes write a PR conversation comment and need `pull-requests: write`. Assi
 
 ## Inputs
 
-| Input             | Default               | Meaning                                                                            |
-| ----------------- | --------------------- | ---------------------------------------------------------------------------------- |
-| `token`           | `${{ github.token }}` | Token used for all API operations.                                                 |
-| `reviewers`       | Required              | Comma- or newline-separated user logins; optional leading `@`.                     |
-| `organizations`   | Empty                 | Organizations whose visible workloads are summed, **instead of** repository scope. |
-| `assign-reviewer` | `false`               | Set to `true` to request review as well as suggest it.                             |
+| Input             | Default               | Meaning                                                                                                 |
+| ----------------- | --------------------- | ------------------------------------------------------------------------------------------------------- |
+| `token`           | `${{ github.token }}` | Token used for all API operations.                                                                      |
+| `reviewers`       | Empty                 | Comma- or newline-separated user logins; optional leading `@`. Empty uses GitHub's suggested reviewers. |
+| `organizations`   | Empty                 | Organizations whose visible workloads are summed, **instead of** repository scope.                      |
+| `assign-reviewer` | `false`               | Set to `true` to request review as well as suggest it.                                                  |
 
 Lists are trimmed, validated, and deduplicated case-insensitively. Boolean inputs accept only `true` or `false`.
+
+### Automatic reviewer discovery
+
+Omit `reviewers` (or leave it empty) to use GitHub's native suggested reviewers for the target PR through GraphQL `PullRequest.suggestedReviewers`. GitHub bases these suggestions on commit history and past review comments; they are not a list of recently active contributors.
+
+An explicit reviewer list takes precedence. In either mode, the action excludes the PR author and balances outstanding review requests across the remaining candidates. If no eligible candidates remain, the action fails before requesting a review or publishing a comment. API failures also fail the run rather than falling back to unrelated contributors.
 
 ### Multiple organizations and assignment
 
@@ -87,7 +93,7 @@ jobs:
           assign-reviewer: "true"
 ```
 
-**Never check out or execute PR-head code in this privileged workflow.** Use trusted, pinned action code and static reviewer configuration. The action uses the PR's base repository, never the fork's head repository. Dependabot PRs may also have token/secret restrictions; repository policy still applies.
+**Never check out or execute PR-head code in this privileged workflow.** Use trusted, pinned action code. Reviewer discovery uses GitHub API metadata only. The action uses the PR's base repository, never the fork's head repository. Dependabot PRs may also have token/secret restrictions; repository policy still applies.
 
 ## Comment and outputs
 
@@ -111,7 +117,7 @@ Outputs are published only after successful comment publication. API failures fa
 
 The action updates its earliest valid, identity-owned managed comment. A copied marker in someone else's comment is not editable. Preserve its hidden marker to retain selection history.
 
-- Keep a prior selected reviewer who is still configured, is not the author, and has an outstanding request on this PR—even if their count is now higher.
+- Keep a prior selected reviewer who is still in the current candidate pool, is not the author, and has an outstanding request on this PR—even if their count is now higher.
 - Otherwise retain a prior suggestion only while it shares the minimum count.
 - Never request the chosen reviewer again if they are already requested, even without a prior comment.
 - Changing token identity can result in a new managed comment. Concurrent runs or manually duplicated owned comments are not consolidated automatically.
