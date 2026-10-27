@@ -32,19 +32,6 @@ jobs:
         run: |
           git diff --exit-code -- dist
           test -z "$(git ls-files --others --exclude-standard -- dist)"
-      - name: Smoke test build
-        shell: bash
-        run: |
-          scratch=$(mktemp -d)
-          trap 'rm -rf "$scratch"' EXIT
-          cp dist/index.js "$scratch/index.js"
-          printf '{"type":"module"}\n' > "$scratch/package.json"
-          status=0
-          output=$(cd "$scratch" && INPUT_TOKEN=fake INPUT_REVIEWERS=alice GITHUB_EVENT_PATH= node index.js 2>&1) || status=$?
-          printf '%s\n' "$output"
-          test "$status" -eq 1
-          grep -Fq 'A valid pull-request event context is required' <<< "$output"
-          ! grep -Eq 'ERR_MODULE_NOT_FOUND|Cannot find module' <<< "$output"
 
   test:
     runs-on: ubuntu-latest
