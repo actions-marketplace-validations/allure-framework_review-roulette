@@ -1,6 +1,10 @@
 name: Review roulette
 description: Suggest the least-loaded reviewer and optionally request their review.
-author: andrcuns
+author: Allure Team
+branding:
+  icon: check-circle
+  color: green
+
 inputs:
   token:
     description: Token with target PR write access and visibility into workload scopes.
@@ -21,9 +25,7 @@ outputs:
     description: Outstanding review requests at selection time, before any new request.
   assigned:
     description: Whether this run successfully created a review request.
+
 runs:
   using: node24
   main: dist/index.js
-branding:
-  icon: users
-  color: purple
