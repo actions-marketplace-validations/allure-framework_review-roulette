@@ -18,7 +18,7 @@ export default defineConfig({
     platform: "node",
     target: "node24",
     format: "esm",
-    deps: { alwaysBundle: [/.*/] },
+    deps: { alwaysBundle: [/.*/], onlyBundle: false },
     dts: false,
     clean: true,
     outDir: "dist",
