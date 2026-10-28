@@ -22,3 +22,5 @@ jobs:
           persist-credentials: false
       - name: Suggest reviewer
         uses: ./
+        with:
+          reviewers: andrcuns,epszaw
