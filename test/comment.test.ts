@@ -6,7 +6,9 @@ it.each(["suggested", "requested", "already-requested"] as const)(
     const body = renderComment({ reviewer: "Alice", reviewCount: 2 }, status);
     expect(body).toContain("### Review roulette");
     expect(body).toContain("| Category | Suggested reviewer |");
-    expect(body).toContain("| All | @Alice — 2 pending review requests |");
+    expect(body).toContain(
+      "| All | [@Alice](https://github.com/Alice) — 2 pending review requests |",
+    );
     expect(body).toContain(
       {
         suggested: "Suggestion only",

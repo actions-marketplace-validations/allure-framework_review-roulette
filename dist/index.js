@@ -20231,7 +20231,7 @@ function renderComment(suggestion, status) {
 
 | Category | Suggested reviewer |
 | --- | --- |
-| All | @${suggestion.reviewer} — ${suggestion.reviewCount} pending review request${suggestion.reviewCount === 1 ? "" : "s"} |
+| All | [@${suggestion.reviewer}](https://github.com/${suggestion.reviewer}) — ${suggestion.reviewCount} pending review request${suggestion.reviewCount === 1 ? "" : "s"} |
 
 ${{
 		suggested: "Suggestion only; no review request was created.",
