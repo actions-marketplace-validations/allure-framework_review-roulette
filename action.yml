@@ -1,4 +1,4 @@
-name: Review roulette
+name: Reviewer Auto Suggest
 description: Suggest the least-loaded reviewer and optionally request their review.
 author: Allure Team
 branding:
