@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - &checkout
+        name: Checkout
+        uses: actions/checkout@v7
+      - &install
+        name: Install dependencies
+        uses: ./.github/actions/install
+      - name: Run check
+        run: yarn check
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - *checkout
+      - *install
+      - name: Build
+        run: yarn build
+      - name: Verify build
+        run: |
+          git diff --exit-code -- dist
+          test -z "$(git ls-files --others --exclude-standard -- dist)"
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - *checkout
+      - *install
+      - name: Test
+        run: yarn coverage

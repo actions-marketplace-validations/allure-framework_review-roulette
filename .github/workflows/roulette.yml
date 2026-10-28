@@ -1,0 +1,26 @@
+name: Review roulette
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: review-roulette-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  suggest:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR merge commit
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Suggest reviewer
+        uses: ./
+        with:
+          reviewers: andrcuns,epszaw

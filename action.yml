@@ -1,0 +1,31 @@
+name: Review roulette
+description: Suggest the least-loaded reviewer and optionally request their review.
+author: Allure Team
+branding:
+  icon: check-circle
+  color: green
+
+inputs:
+  token:
+    description: Token with target PR write access and visibility into workload scopes.
+    default: ${{ github.token }}
+  reviewers:
+    description: Comma- or newline-separated GitHub user logins; empty uses GitHub's suggested reviewers for the PR.
+    default: ""
+  organizations:
+    description: Organizations whose visible workloads are combined; empty means current repository.
+    default: ""
+  assign-reviewer:
+    description: Request the selected review in addition to posting a suggestion.
+    default: "false"
+outputs:
+  reviewer:
+    description: Selected reviewer login.
+  review-count:
+    description: Outstanding review requests at selection time, before any new request.
+  assigned:
+    description: Whether this run successfully created a review request.
+
+runs:
+  using: node24
+  main: dist/index.js
