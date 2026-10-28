@@ -1,9 +1,10 @@
 import * as core from "@actions/core";
 import { context } from "@actions/github";
 import { parseOptions, loginPattern } from "./inputs";
-import { createGitHubApi } from "./github";
+import { GitHubClient } from "./github";
 import { run } from "./run";
 import type { Target } from "./model";
+
 function targetFromPayload(): Target {
   const pull = context.payload.pull_request;
   const owner = pull?.base?.repo?.owner?.login;
@@ -22,6 +23,7 @@ function targetFromPayload(): Target {
   }
   return { owner, repo, pullNumber };
 }
+
 export async function main(): Promise<void> {
   let token = "";
   try {
@@ -34,7 +36,7 @@ export async function main(): Promise<void> {
       "assign-reviewer": core.getInput("assign-reviewer"),
     });
     const target = targetFromPayload();
-    const result = await run(options, target, createGitHubApi(token));
+    const result = await run(options, target, new GitHubClient(token));
     core.setOutput("reviewer", result.reviewer);
     core.setOutput("review-count", result.reviewCount);
     core.setOutput("assigned", result.assigned);

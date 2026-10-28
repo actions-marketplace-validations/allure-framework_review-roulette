@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { createGitHubApi } from "../src/github";
+import { GitHubClient } from "../src/github";
 const target = { owner: "acme", repo: "project", pullNumber: 7 };
 function harness(replies: { body: unknown; status?: number; headers?: Record<string, string> }[]) {
   const calls: { url: string; body: Record<string, unknown>; method: string }[] = [];
@@ -18,7 +18,7 @@ function harness(replies: { body: unknown; status?: number; headers?: Record<str
     });
   };
   return {
-    api: createGitHubApi("fake-token", {
+    api: new GitHubClient("fake-token", {
       fetch: fetcher,
       sleep: async (ms) => {
         waits.push(ms);

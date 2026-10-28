@@ -1,5 +1,6 @@
 import { loginPattern } from "./inputs";
 import type { AssignmentStatus, CommentIdentity, ManagedComment, Suggestion } from "./model";
+
 export function renderComment(suggestion: Suggestion, status: AssignmentStatus): string {
   const copy = {
     suggested: "Suggestion only; no review request was created.",
@@ -16,12 +17,14 @@ ${copy[status]}
 
 <!-- review-roulette:v1:${suggestion.reviewer} -->`;
 }
+
 export function readSuggestion(body: string): string | undefined {
   const matches = [...body.matchAll(/<!-- review-roulette:v1:([^\n]*?) -->/g)];
   if (matches.length !== 1) return undefined;
   const login = matches[0][1];
   return loginPattern.test(login) ? login : undefined;
 }
+
 export function findManagedComment(
   comments: ManagedComment[],
   identity: CommentIdentity,

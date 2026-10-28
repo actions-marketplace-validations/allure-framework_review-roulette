@@ -1,6 +1,7 @@
 import { findManagedComment, readSuggestion, renderComment } from "./comment";
 import { selectReviewer } from "./selection";
 import type { AssignmentStatus, GitHubApi, Options, RunResult, Target } from "./model";
+
 export async function run(
   options: Options,
   target: Target,

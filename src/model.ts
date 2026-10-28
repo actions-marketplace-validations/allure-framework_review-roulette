@@ -1,3 +1,5 @@
+import type { GitHubClient } from "./github";
+
 export interface Options {
   token: string;
   reviewers: string[];
@@ -30,17 +32,4 @@ export interface CommentIdentity {
   login: string;
   appId?: number;
 }
-export interface GitHubApi {
-  checkAccess(target: Target, organizations: string[]): Promise<CommentIdentity>;
-  getPull(target: Target): Promise<PullSnapshot>;
-  getSuggestedReviewers(target: Target): Promise<string[]>;
-  getCounts(
-    target: Target,
-    organizations: string[],
-    reviewers: string[],
-  ): Promise<Map<string, number>>;
-  listComments(target: Target): Promise<ManagedComment[]>;
-  requestReview(target: Target, reviewer: string): Promise<void>;
-  createComment(target: Target, body: string): Promise<void>;
-  updateComment(target: Target, commentId: number, body: string): Promise<void>;
-}
+export type GitHubApi = Pick<GitHubClient, keyof GitHubClient>;

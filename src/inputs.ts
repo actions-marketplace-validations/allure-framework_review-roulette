@@ -1,5 +1,7 @@
 import type { Options } from "./model";
+
 export const loginPattern = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i;
+
 function parseList(value: string, reviewer: boolean): string[] {
   const unique = new Map<string, string>();
   for (const entry of value.split(/[,\n]/)) {
@@ -10,6 +12,7 @@ function parseList(value: string, reviewer: boolean): string[] {
   }
   return [...unique.values()];
 }
+
 export function parseOptions(raw: Record<string, string>): Options {
   const token = (raw.token ?? "").trim();
   if (!token) throw new Error("token is required");

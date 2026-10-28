@@ -20,7 +20,7 @@ const doubles = vi.hoisted(() => ({
   setOutput: vi.fn(),
   setFailed: vi.fn(),
   setSecret: vi.fn(),
-  create: vi.fn(),
+  create: vi.fn(function () {}),
   run: vi.fn(),
 }));
 vi.mock("@actions/core", () => ({
@@ -30,7 +30,7 @@ vi.mock("@actions/core", () => ({
   setSecret: doubles.setSecret,
 }));
 vi.mock("@actions/github", () => ({ context: doubles.context }));
-vi.mock("../src/github", () => ({ createGitHubApi: doubles.create }));
+vi.mock("../src/github", () => ({ GitHubClient: doubles.create }));
 vi.mock("../src/run", () => ({ run: doubles.run }));
 import { main } from "../src/main";
 beforeEach(() => {
