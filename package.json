@@ -14,7 +14,7 @@
     "@actions/github": "9.1.1"
   },
   "devDependencies": {
-    "@types/node": "24.10.1",
+    "@types/node": "26.6.5",
     "@vitest/coverage-v8": "5.0.5",
     "lefthook": "^2.2.2",
     "typescript": "6.0.3",
